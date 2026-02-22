@@ -1,5 +1,11 @@
 import unittest
 from unittest.mock import patch, MagicMock
+import sys
+import os
+
+# Ensure project root is in path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from services.validation_service import validate_license_request
 
 class TestValidationService(unittest.TestCase):
@@ -12,33 +18,36 @@ class TestValidationService(unittest.TestCase):
         self.headers = {'User-Agent': 'TestAgent'}
         self.ip = '127.0.0.1'
 
-    @patch('services.validation_service.license_model')
-    @patch('services.validation_service.machine_model')
-    @patch('services.validation_service.tracking_model')
-    @patch('services.validation_service.hwid_parser')
-    @patch('urllib.request.urlopen')
-    def test_validate_success_first_activation(self, mock_urlopen, mock_hwid, mock_tracking, mock_machine, mock_license):
+    @patch('services.validation_service.requests.get')
+    @patch('services.validation_service.license_model.get_license_by_key')
+    @patch('services.validation_service.machine_model.get_machine_by_license_id')
+    @patch('services.validation_service.machine_model.add_machine')
+    @patch('services.validation_service.license_model.update_license_status')
+    @patch('services.validation_service.tracking_model.log_activation')
+    @patch('services.validation_service.hwid_parser.parse_hwid')
+    def test_validate_success_first_activation(self, mock_parse_hwid, mock_log_act, mock_update, mock_add_machine, mock_get_machine, mock_get_license, mock_requests_get):
         # Setup mocks
-        mock_hwid.parse_hwid.return_value = 'normalized-hwid'
+        mock_parse_hwid.return_value = 'normalized-hwid'
 
         # License found, active
-        mock_license.get_license_by_key.return_value = {
+        mock_get_license.return_value = {
             'id': 10,
             'app_id': 1,
             'license_key': 'TEST-KEY-1234',
             'status': 'active',
             'type': 'lifetime',
-            'created_at': '2023-01-01'
+            'created_at': '2023-01-01',
+            'duration_days': None
         }
 
         # No machine bound yet
-        mock_machine.get_machine_by_license_id.return_value = None
+        mock_get_machine.return_value = None
 
-        # Mock geolocation (optional, but good to ensure no crash)
+        # Mock geolocation
         mock_response = MagicMock()
-        mock_response.read.return_value = b'{"status": "success", "country": "US", "city": "New York"}'
-        mock_response.__enter__.return_value = mock_response
-        mock_urlopen.return_value = mock_response
+        mock_response.status_code = 200
+        mock_response.json.return_value = {'status': 'success', 'country': 'US', 'city': 'New York'}
+        mock_requests_get.return_value = mock_response
 
         # Execute
         result = validate_license_request(self.payload, self.headers, self.ip)
@@ -48,33 +57,40 @@ class TestValidationService(unittest.TestCase):
         self.assertEqual(result['hwid'], 'normalized-hwid')
 
         # Check side effects
-        mock_machine.add_machine.assert_called_with(10, 'normalized-hwid')
-        mock_license.update_license_status.assert_called_with(10, 'used')
-        mock_tracking.log_activation.assert_called()
+        mock_add_machine.assert_called_with(10, 'normalized-hwid')
+        mock_update.assert_called_with(10, 'used')
+        mock_log_act.assert_called()
 
-    @patch('services.validation_service.license_model')
-    @patch('services.validation_service.machine_model')
-    @patch('services.validation_service.tracking_model')
-    @patch('services.validation_service.hwid_parser')
-    def test_validate_fail_hwid_mismatch(self, mock_hwid, mock_tracking, mock_machine, mock_license):
-        mock_hwid.parse_hwid.return_value = 'normalized-hwid'
+    @patch('services.validation_service.requests.get')
+    @patch('services.validation_service.license_model.get_license_by_key')
+    @patch('services.validation_service.machine_model.get_machine_by_license_id')
+    @patch('services.validation_service.tracking_model.log_failed_attempt')
+    @patch('services.validation_service.hwid_parser.parse_hwid')
+    def test_validate_fail_hwid_mismatch(self, mock_parse_hwid, mock_log_fail, mock_get_machine, mock_get_license, mock_requests_get):
+        mock_parse_hwid.return_value = 'normalized-hwid'
 
-        mock_license.get_license_by_key.return_value = {
+        mock_get_license.return_value = {
             'id': 10,
             'app_id': 1,
             'license_key': 'TEST-KEY-1234',
             'status': 'used',
-            'type': 'lifetime'
+            'type': 'lifetime',
+            'created_at': '2023-01-01',
+            'duration_days': None
         }
 
         # Bound to DIFFERENT hwid
-        mock_machine.get_machine_by_license_id.return_value = {'hwid': 'other-hwid'}
+        mock_get_machine.return_value = {'hwid': 'other-hwid'}
 
         with self.assertRaises(ValueError) as cm:
             validate_license_request(self.payload, self.headers, self.ip)
 
-        self.assertIn("already used", str(cm.exception))
-        mock_tracking.log_failed_attempt.assert_called_with(
+        self.assertIn("License is already used on another machine", str(cm.exception))
+        # Note: log_failed_attempt args might have changed or I need to be careful with arguments.
+        # In validation_service:
+        # tracking_model.log_failed_attempt(app_id, license_key, client_ip, normalized_hwid, user_agent, country, city, "already_used_elsewhere")
+        # In test:
+        mock_log_fail.assert_called_with(
             1, 'TEST-KEY-1234', self.ip, 'normalized-hwid', 'TestAgent', 'Unknown', 'Unknown', 'already_used_elsewhere'
         )
 
