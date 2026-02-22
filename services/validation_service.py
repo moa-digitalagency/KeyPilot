@@ -69,6 +69,20 @@ def validate_license_request(payload, request_headers, client_ip):
 
     app_id = license_data['app_id']
 
+    # Check Expiration (for trial licenses)
+    if license_data['type'] == 'trial':
+        created_at = license_data['created_at']
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+
+        expiration_date = created_at + timedelta(days=license_data['duration_days'])
+
+        if datetime.now(timezone.utc) > expiration_date:
+            tracking_model.log_failed_attempt(
+                app_id, license_key, client_ip, normalized_hwid, user_agent, country, city, "license_expired"
+            )
+            raise ValueError("La période d'essai de cette licence a expiré.")
+
     # Check Status
     status = license_data['status']
 
