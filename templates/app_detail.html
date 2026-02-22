@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Détails de l'application{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ app.name }}</h1>
+            <p class="text-gray-500 mt-1">ID: <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{{ app.id }}</span></p>
+        </div>
+        <div class="flex space-x-3">
+             <a href="{{ url_for('admin.apps') }}" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition shadow-sm font-medium">
+                <i class="fas fa-arrow-left mr-2"></i> Retour
+            </a>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-md font-medium">
+                <i class="fas fa-edit mr-2"></i> Éditer
+            </button>
+        </div>
+    </div>
+
+    <!-- App Details Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- App Secret -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">App Secret</h3>
+                <div class="p-2 bg-purple-50 rounded-lg text-purple-600">
+                    <i class="fas fa-key"></i>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <code class="flex-1 bg-gray-50 p-3 rounded-lg border border-gray-200 font-mono text-sm text-gray-600 truncate" title="{{ app.app_secret }}">
+                    {{ app.app_secret }}
+                </code>
+                <button onclick="navigator.clipboard.writeText('{{ app.app_secret }}')" class="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Copier">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+            <p class="text-xs text-gray-400 mt-3">Clé privée pour signer les requêtes.</p>
+        </div>
+
+        <!-- Stats Placeholder -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+             <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Statut</h3>
+                <div class="p-2 bg-green-50 rounded-lg text-green-600">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+            <div class="mt-2">
+                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    Actif
+                </span>
+            </div>
+            <p class="text-xs text-gray-400 mt-4">Créé le {{ app.created_at }}</p>
+        </div>
+
+         <!-- Quick Actions -->
+         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center space-y-3">
+             <h3 class="text-lg font-semibold text-gray-800 mb-2">Actions Rapides</h3>
+             <button class="w-full py-2 px-4 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-left transition flex items-center">
+                 <i class="fas fa-ticket-alt w-6 text-gray-400"></i> Générer Licence
+             </button>
+             <button class="w-full py-2 px-4 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-left transition flex items-center">
+                 <i class="fas fa-ban w-6 text-gray-400"></i> Révoquer tout
+             </button>
+        </div>
+    </div>
+
+    <!-- AI Prompt Section -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i class="fas fa-robot text-blue-400 text-2xl"></i>
+                <div>
+                    <h2 class="text-lg font-bold text-white">Prompt Instructeur IA</h2>
+                    <p class="text-slate-400 text-xs">Utilisez ce prompt pour configurer l'agent IA (Cursor/Jules)</p>
+                </div>
+            </div>
+            <button onclick="copyPrompt()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition shadow-lg shadow-blue-500/30 flex items-center">
+                <i class="fas fa-copy mr-2"></i> Copier le Prompt
+            </button>
+        </div>
+
+        <div class="relative group">
+            <pre class="bg-slate-900 text-gray-300 p-6 overflow-x-auto text-sm font-mono leading-relaxed custom-scrollbar h-[500px]" id="aiPromptBlock">{{ ai_prompt }}</pre>
+             <div class="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyPrompt() {
+        const promptText = document.getElementById('aiPromptBlock').innerText;
+        navigator.clipboard.writeText(promptText).then(() => {
+            // Show a temporary success indicator
+            const btn = document.querySelector('button[onclick="copyPrompt()"]');
+            const originalHTML = btn.innerHTML;
+
+            btn.innerHTML = '<i class="fas fa-check mr-2"></i> Copié !';
+            btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
+            btn.classList.add('bg-green-600', 'hover:bg-green-500');
+
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+                btn.classList.remove('bg-green-600', 'hover:bg-green-500');
+            }, 2000);
+        });
+    }
+</script>
+{% endblock %}
