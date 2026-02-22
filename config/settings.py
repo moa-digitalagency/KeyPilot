@@ -10,6 +10,8 @@ class Config:
     """
     # Security
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev_secret_key')
+    ADMIN_USERNAME = os.getenv('ADMIN_USERNAME')
+    ADMIN_PASSWORD_HASH = os.getenv('ADMIN_PASSWORD_HASH')
 
     # Database
     # Support both full URL and individual components
