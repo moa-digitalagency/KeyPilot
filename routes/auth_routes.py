@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from models.admin_model import find_admin_by_username, verify_password
+from werkzeug.security import check_password_hash
+from config.settings import Config
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -12,14 +13,15 @@ def login_post():
     username = request.form.get('username')
     password = request.form.get('password')
 
+    admin_username = Config.ADMIN_USERNAME
+    admin_password_hash = Config.ADMIN_PASSWORD_HASH
+
     if not username or not password:
         flash('Please enter both username and password')
         return redirect(url_for('auth.login'))
 
-    admin = find_admin_by_username(username)
-
-    if admin and verify_password(admin['password_hash'], password):
-        session['admin_id'] = admin['id']
+    if username == admin_username and check_password_hash(admin_password_hash, password):
+        session['admin_id'] = 'superadmin'
         return redirect(url_for('admin.dashboard'))
 
     flash('Invalid username or password')
