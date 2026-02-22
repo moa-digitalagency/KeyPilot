@@ -1,97 +1,112 @@
 {% extends "base.html" %}
 
+{% block title %}Dashboard Overview{% endblock %}
+
 {% block content %}
-<div class="container mx-auto px-6 py-8">
-    <h3 class="text-gray-700 text-3xl font-medium">Dashboard</h3>
+<header class="flex items-center justify-between mb-8">
+    <div>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Vue d'ensemble</h2>
+        <p class="text-slate-500 dark:text-slate-400 text-sm">Bienvenue, voici ce qui se passe aujourd'hui.</p>
+    </div>
+    <div class="flex items-center gap-4">
+        <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+            <input class="pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary focus:outline-none w-64 transition-all text-slate-900 dark:text-white" placeholder="Rechercher..." type="text"/>
+        </div>
+        <button class="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors relative">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-white dark:border-slate-800"></span>
+        </button>
+    </div>
+</header>
 
-    <!-- Stats Cards -->
-    <div class="mt-4">
-        <div class="flex flex-wrap -mx-6">
-            <div class="w-full px-6 sm:w-1/2 xl:w-1/3">
-                <div class="flex items-center px-5 py-6 shadow-sm rounded-md bg-white">
-                    <div class="p-3 rounded-full bg-indigo-600 bg-opacity-75">
-                        <i class="fas fa-cubes text-white text-2xl"></i>
-                    </div>
-
-                    <div class="mx-5">
-                        <h4 class="text-2xl font-semibold text-gray-700">{{ stats.total_apps if stats else 0 }}</h4>
-                        <div class="text-gray-500">Total Apps</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="w-full mt-6 px-6 sm:w-1/2 xl:w-1/3 sm:mt-0">
-                <div class="flex items-center px-5 py-6 shadow-sm rounded-md bg-white">
-                    <div class="p-3 rounded-full bg-green-600 bg-opacity-75">
-                        <i class="fas fa-key text-white text-2xl"></i>
-                    </div>
-
-                    <div class="mx-5">
-                        <h4 class="text-2xl font-semibold text-gray-700">{{ stats.total_licenses if stats else 0 }}</h4>
-                        <div class="text-gray-500">Total Licenses</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="w-full mt-6 px-6 sm:w-1/2 xl:w-1/3 xl:mt-0">
-                <div class="flex items-center px-5 py-6 shadow-sm rounded-md bg-white">
-                    <div class="p-3 rounded-full bg-pink-600 bg-opacity-75">
-                        <i class="fas fa-check-circle text-white text-2xl"></i>
-                    </div>
-
-                    <div class="mx-5">
-                        <h4 class="text-2xl font-semibold text-gray-700">{{ stats.active_licenses if stats else 0 }}</h4>
-                        <div class="text-gray-500">Active Licenses</div>
-                    </div>
-                </div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <div class="bg-white dark:bg-[#192233] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <div class="p-2 bg-primary/10 rounded-lg">
+                <span class="material-symbols-outlined text-primary">inventory_2</span>
             </div>
         </div>
+        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Applications</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1">{{ stats.total_apps if stats else 0 }}</p>
     </div>
 
-    <!-- Recent Apps Table -->
-    <div class="mt-8">
-        <h4 class="text-gray-600 text-xl font-medium">Recent Applications</h4>
-        <div class="flex flex-col mt-4">
-            <div class="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-                <div class="align-middle inline-block min-w-full shadow overflow-hidden sm:rounded-lg border-b border-gray-200">
-                    <table class="min-w-full">
-                        <thead>
-                            <tr>
-                                <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">App Secret</th>
-                                <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                                <th class="px-6 py-3 border-b border-gray-200 bg-gray-50"></th>
-                            </tr>
-                        </thead>
-
-                        <tbody class="bg-white">
-                            {% if recent_apps %}
-                                {% for app in recent_apps %}
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-                                        <div class="text-sm leading-5 font-medium text-gray-900">{{ app.name }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-                                        <div class="text-sm leading-5 text-gray-500 font-mono">{{ app.app_secret[:8] }}...</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-                                        <div class="text-sm leading-5 text-gray-500">{{ app.created_at }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-no-wrap text-right border-b border-gray-200 text-sm leading-5 font-medium">
-                                        <a href="{{ url_for('admin.apps') }}" class="text-indigo-600 hover:text-indigo-900">View</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="4" class="px-6 py-4 text-center text-gray-500">No recent applications found.</td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
+    <div class="bg-white dark:bg-[#192233] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <div class="p-2 bg-emerald-500/10 rounded-lg">
+                <span class="material-symbols-outlined text-emerald-500">check_circle</span>
             </div>
         </div>
+        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Licences Totales</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1">{{ stats.total_licenses if stats else 0 }}</p>
+    </div>
+
+    <div class="bg-white dark:bg-[#192233] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <div class="p-2 bg-amber-500/10 rounded-lg">
+                <span class="material-symbols-outlined text-amber-500">key</span>
+            </div>
+        </div>
+        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Licences Actives</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1">{{ stats.active_licenses if stats else 0 }}</p>
+    </div>
+
+    <div class="bg-white dark:bg-[#192233] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <div class="p-2 bg-rose-500/10 rounded-lg">
+                <span class="material-symbols-outlined text-rose-500">warning</span>
+            </div>
+        </div>
+        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Tentatives Bloquées</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1">N/A</p>
+    </div>
+</div>
+
+<div class="bg-white dark:bg-[#111722] rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+    <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Dernières Applications</h3>
+        <a href="{{ url_for('admin.apps') }}" class="text-primary text-sm font-semibold hover:underline">Voir tout</a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/50">
+                    <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Application</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Secret (Partiel)</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Créée le</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% if recent_apps %}
+                    {% for app in recent_apps %}
+                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined text-sm">apps</span>
+                                </div>
+                                <span class="text-sm font-medium text-slate-900 dark:text-slate-200">{{ app.name }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 font-mono">
+                            {{ app.app_secret[:12] }}...
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                            {{ app.created_at }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{{ url_for('admin.apps') }}" class="text-primary hover:text-primary/80 transition-colors">Gérer</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400 text-sm">Aucune application récente.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}
