@@ -16,10 +16,11 @@ def validate():
         return jsonify({'error': 'Invalid JSON'}), 400
 
     # Extract client info
-    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    # If multiple IPs in X-Forwarded-For, take the first one
-    if client_ip and ',' in client_ip:
-        client_ip = client_ip.split(',')[0].strip()
+    x_forwarded_for = request.headers.get('X-Forwarded-For')
+    if x_forwarded_for:
+        client_ip = x_forwarded_for.split(',')[0].strip()
+    else:
+        client_ip = request.remote_addr
 
     # Extract headers
     headers = {
