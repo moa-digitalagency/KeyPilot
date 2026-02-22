@@ -40,11 +40,12 @@ Intègre les clés suivantes en dur (ou via configuration sécurisée) dans le c
 - **API URL** : `{api_url}`
 - **App ID** : `{app_id}`
 
-## 7. Mise en Cache Locale
-L'IA cible doit implémenter un système de cache pour éviter de surcharger l'API :
-- Créer un fichier cache chiffré localement ou utiliser une variable de session persistante.
-- La vérification via l'API ne doit se faire qu'une fois toutes les 24h (ou au démarrage de l'app si nécessaire).
-- L'état "valide" de la licence doit être mis en cache pour le reste des opérations durant cette période.
+## 7. Mise en Cache et Résilience (Fail-Safe)
+L'IA cible doit implémenter un système de cache pour éviter de surcharger l'API et garantir la continuité de service :
+- Stockez le résultat de la validation (statut, date/heure, signature) dans un fichier local chiffré (ex: AES-256) ou offusqué.
+- **Mode Hors-Ligne Toléré (Grace Period)** : Si la requête HTTP vers l'API KeyPilot échoue (Timeout, Erreur 500), le système DOIT consulter ce cache local.
+- Si le cache indique une licence valide et que la dernière validation réussie date de moins de **72 heures**, l'application doit démarrer normalement.
+- Au-delà de 72 heures sans contact avec le serveur, l'application se verrouille.
 
 ---
 **Instruction Finale :** Analyse la structure actuelle du projet `{app_name}` et propose une implémentation qui respecte ces contraintes de sécurité maximale.
