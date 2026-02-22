@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+    <div class="flex justify-between items-center pb-4">
+        <h3 class="text-gray-700 text-3xl font-medium">Applications</h3>
+        <button onclick="openModal('create-app-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105">
+            <i class="fas fa-plus mr-2"></i>New App
+        </button>
+    </div>
+
+    <div class="flex flex-col mt-8">
+        <div class="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+            <div class="align-middle inline-block min-w-full shadow overflow-hidden sm:rounded-lg border-b border-gray-200">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">App Secret</th>
+                            <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                            <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="bg-white">
+                        {% for app in apps %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                <div class="text-sm leading-5 font-medium text-gray-900">{{ app.name }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                <div class="text-sm leading-5 text-gray-500 font-mono">{{ app.app_secret[:8] }}...</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                <div class="text-sm leading-5 text-gray-500">{{ app.created_at }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-no-wrap text-right border-b border-gray-200 text-sm leading-5 font-medium">
+                                <button onclick="openGenerateLicenseModal('{{ app.id }}', '{{ app.name }}')" class="text-green-600 hover:text-green-900 mr-4" title="Generate License">
+                                    <i class="fas fa-key"></i> License
+                                </button>
+                                <button onclick="openSnippetModal('{{ app.id }}')" class="text-blue-600 hover:text-blue-900" title="View Client Snippet">
+                                    <i class="fas fa-code"></i> Snippet
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create App Modal -->
+<div id="create-app-modal" class="modal-container fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="modal-overlay absolute inset-0" onclick="closeModal('create-app-modal')"></div>
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 overflow-hidden transform transition-all sm:max-w-lg sm:w-full z-10 relative">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Create New Application</h3>
+            <button onclick="closeModal('create-app-modal')" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form action="{{ url_for('admin.new_app') }}" method="POST">
+            <div class="px-6 py-4">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="app-name">App Name</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="app-name" name="name" type="text" placeholder="My Awesome App" required>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-3 sm:flex sm:flex-row-reverse">
+                <span class="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
+                    <button type="submit" class="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-indigo-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:border-indigo-700 focus:shadow-outline-indigo transition ease-in-out duration-150 sm:text-sm sm:leading-5">Create</button>
+                </span>
+                <span class="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto">
+                    <button type="button" onclick="closeModal('create-app-modal')" class="inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5">Cancel</button>
+                </span>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Generate License Modal -->
+<div id="generate-license-modal" class="modal-container fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="modal-overlay absolute inset-0" onclick="closeModal('generate-license-modal')"></div>
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 overflow-hidden transform transition-all sm:max-w-lg sm:w-full z-10 relative">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Generate License for <span id="license-app-name" class="font-bold"></span></h3>
+            <button onclick="closeModal('generate-license-modal')" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form action="{{ url_for('admin.generate_license') }}" method="POST">
+            <input type="hidden" name="app_id" id="license-app-id">
+            <div class="px-6 py-4">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="license-type">License Type</label>
+                    <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="license-type" name="type">
+                        <option value="trial">Trial</option>
+                        <option value="subscription">Subscription</option>
+                        <option value="lifetime">Lifetime</option>
+                    </select>
+                </div>
+                <div class="mb-4" id="duration-group">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="duration-days">Duration (Days)</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="duration-days" name="duration_days" type="number" placeholder="30">
+                    <p class="text-gray-600 text-xs italic mt-1">Leave empty for lifetime (if applicable).</p>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-3 sm:flex sm:flex-row-reverse">
+                <span class="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
+                    <button type="submit" class="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-green-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-green-500 focus:outline-none focus:border-green-700 focus:shadow-outline-green transition ease-in-out duration-150 sm:text-sm sm:leading-5">Generate</button>
+                </span>
+                <span class="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto">
+                    <button type="button" onclick="closeModal('generate-license-modal')" class="inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5">Cancel</button>
+                </span>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- View Snippet Modal -->
+<div id="snippet-modal" class="modal-container fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="modal-overlay absolute inset-0" onclick="closeModal('snippet-modal')"></div>
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl mx-4 overflow-hidden transform transition-all h-5/6 flex flex-col z-10 relative">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 flex-shrink-0">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Client Code Snippet</h3>
+            <button onclick="closeModal('snippet-modal')" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="relative flex-grow overflow-auto bg-gray-900 p-4">
+            <button id="copy-btn-snippet-code" onclick="copyToClipboard('snippet-code')" class="absolute top-4 right-4 bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded text-sm transition duration-200">
+                Copy
+            </button>
+            <pre class="text-green-400 font-mono text-sm whitespace-pre-wrap break-all" id="snippet-code">Loading snippet...</pre>
+        </div>
+        <div class="bg-gray-50 px-6 py-3 flex justify-end flex-shrink-0">
+            <button type="button" onclick="closeModal('snippet-modal')" class="inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openGenerateLicenseModal(appId, appName) {
+        document.getElementById('license-app-id').value = appId;
+        document.getElementById('license-app-name').innerText = appName;
+        openModal('generate-license-modal');
+    }
+
+    async function openSnippetModal(appId) {
+        openModal('snippet-modal');
+        const codeElement = document.getElementById('snippet-code');
+        codeElement.innerText = "Loading...";
+
+        try {
+            const response = await fetch(`/snippet/${appId}`);
+            if (!response.ok) throw new Error('Failed to fetch snippet');
+            const data = await response.json();
+            codeElement.innerText = data.snippet;
+        } catch (error) {
+            console.error(error);
+            codeElement.innerText = "Error loading snippet. Please try again.";
+        }
+    }
+</script>
+{% endblock %}
