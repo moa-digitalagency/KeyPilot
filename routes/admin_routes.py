@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from security.auth_middleware import require_admin_auth
 from services.app_service import register_app
 from services.license_service import create_new_license
 from models.app_model import list_apps
+from utils.snippet_builder import generate_client_snippet
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -13,7 +14,20 @@ def before_request():
 
 @admin_bp.route('/dashboard')
 def dashboard():
-    return render_template('dashboard.html')
+    apps = list_apps()
+    stats = {
+        'total_apps': len(apps),
+        'total_licenses': 'N/A', # Placeholder as we don't have a global count yet
+        'active_licenses': 'N/A'
+    }
+    return render_template('dashboard.html', stats=stats, recent_apps=apps[:5])
+
+@admin_bp.route('/snippet/<app_id>')
+def get_snippet(app_id):
+    # Construct API URL from request.host_url, ensuring no trailing slash
+    api_url = request.host_url.rstrip('/')
+    snippet = generate_client_snippet(app_id, api_url)
+    return jsonify({'snippet': snippet})
 
 @admin_bp.route('/apps')
 def apps():

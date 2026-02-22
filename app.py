@@ -4,7 +4,7 @@ from routes.api_routes import api_bp
 from routes.admin_routes import admin_bp
 from routes.auth_routes import auth_bp
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='statics')
 app.config.from_object(Config)
 
 # Register Blueprints

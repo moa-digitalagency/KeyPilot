@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KeyPilot Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <style>
+        .sidebar-link {
+            transition: all 0.3s ease;
+        }
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #3B82F6;
+        }
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #3B82F6;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="bg-gray-900 text-white w-64 flex-shrink-0 hidden md:flex flex-col h-full shadow-xl relative z-10 transition-transform duration-300 ease-in-out transform md:translate-x-0" id="sidebar">
+        <div class="h-16 flex items-center justify-center border-b border-gray-800">
+            <h1 class="text-2xl font-bold tracking-wider uppercase text-blue-500">KeyPilot</h1>
+        </div>
+
+        <nav class="flex-grow mt-6 px-4 space-y-2 overflow-y-auto custom-scrollbar">
+            <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link flex items-center py-3 px-4 rounded text-gray-300 hover:text-white {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                <i class="fas fa-tachometer-alt w-6 text-center"></i>
+                <span class="ml-3 font-medium">Dashboard</span>
+            </a>
+            <a href="{{ url_for('admin.apps') }}" class="sidebar-link flex items-center py-3 px-4 rounded text-gray-300 hover:text-white {% if request.endpoint == 'admin.apps' %}active{% endif %}">
+                <i class="fas fa-cube w-6 text-center"></i>
+                <span class="ml-3 font-medium">Applications</span>
+            </a>
+        </nav>
+
+        <div class="border-t border-gray-800 p-4">
+            <a href="{{ url_for('auth.logout') }}" class="flex items-center py-2 px-4 rounded text-gray-400 hover:text-white hover:bg-red-600 transition-colors duration-200">
+                <i class="fas fa-sign-out-alt w-6 text-center"></i>
+                <span class="ml-3 font-medium">Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-100">
+
+        <!-- Mobile Header -->
+        <header class="md:hidden bg-white shadow flex items-center justify-between p-4 z-20">
+            <h1 class="text-xl font-bold text-gray-800">KeyPilot</h1>
+            <button id="mobile-menu-btn" class="text-gray-500 focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </header>
+
+        <!-- Flash Messages -->
+        <div class="container mx-auto px-6 py-4">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded shadow-sm relative animate-fade-in-down" role="alert">
+                            <p class="font-bold">Notice</p>
+                            <p>{{ message }}</p>
+                            <span class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="this.parentElement.style.display='none';">
+                                <i class="fas fa-times"></i>
+                            </span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Page Content -->
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-0 hidden md:hidden"></div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Simple Mobile Sidebar Toggle
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('hidden');
+                sidebar.classList.toggle('absolute'); // Make absolute on mobile
+                sidebar.classList.toggle('inset-y-0');
+                sidebar.classList.toggle('left-0');
+                sidebar.classList.toggle('z-30');
+                overlay.classList.toggle('hidden');
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.add('hidden');
+                overlay.classList.add('hidden');
+            });
+        }
+    </script>
+</body>
+</html>
