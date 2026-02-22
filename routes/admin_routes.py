@@ -21,7 +21,8 @@ def dashboard():
         'total_licenses': 'N/A', # Placeholder as we don't have a global count yet
         'active_licenses': 'N/A'
     }
-    return render_template('dashboard.html', stats=stats, recent_apps=apps[:5])
+    recent_activations = get_activations()
+    return render_template('dashboard.html', stats=stats, recent_apps=apps[:5], recent_activations=recent_activations[:5])
 
 @admin_bp.route('/snippet/<app_id>')
 def get_snippet(app_id):

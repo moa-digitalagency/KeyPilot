@@ -18,12 +18,19 @@ class TestDashboard(unittest.TestCase):
         self.app.register_blueprint(auth_bp)
         self.client = self.app.test_client()
 
+    @patch('routes.admin_routes.get_activations')
     @patch('routes.admin_routes.list_apps')
-    def test_dashboard_route(self, mock_list_apps):
+    def test_dashboard_route(self, mock_list_apps, mock_get_activations):
         # Mock apps data
         mock_list_apps.return_value = [
             {'id': 1, 'name': 'App1', 'app_secret': 'secret123456789', 'created_at': '2023-01-01'},
             {'id': 2, 'name': 'App2', 'app_secret': 'secret987654321', 'created_at': '2023-01-02'}
+        ]
+
+        # Mock activations data
+        mock_get_activations.return_value = [
+            {'app_name': 'App1', 'license_key': 'KEY-1234', 'ip_address': '127.0.0.1', 'activated_at': '2023-01-03'},
+            {'app_name': 'App2', 'license_key': 'KEY-5678', 'ip_address': '192.168.1.1', 'activated_at': '2023-01-04'}
         ]
 
         # Simulate admin login
@@ -40,12 +47,19 @@ class TestDashboard(unittest.TestCase):
         self.assertIn(b'Licences Actives', response.data)
         self.assertIn(b'Tentatives Bloqu\xc3\xa9es', response.data) # Bloquées in utf-8
 
+        # Check if new section is present
+        self.assertIn(b'Derni\xc3\xa8res Licences Activ\xc3\xa9es', response.data) # Dernières Licences Activées in utf-8
+
         # Check if stats are rendered (N/A for now as per backend)
         self.assertIn(b'N/A', response.data)
 
         # Check if apps are listed
         self.assertIn(b'App1', response.data)
         self.assertIn(b'App2', response.data)
+
+        # Check if activations are listed
+        self.assertIn(b'KEY-1234', response.data)
+        self.assertIn(b'KEY-5678', response.data)
 
 if __name__ == '__main__':
     unittest.main()
