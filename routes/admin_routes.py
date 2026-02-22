@@ -3,6 +3,7 @@ from security.auth_middleware import require_admin_auth
 from services.app_service import register_app
 from services.license_service import create_new_license
 from models.app_model import list_apps
+from models.tracking_model import get_activations, get_failed_attempts
 from utils.snippet_builder import generate_client_snippet
 
 admin_bp = Blueprint('admin', __name__)
@@ -72,3 +73,17 @@ def generate_license():
         print(f"Error generating license: {e}")
 
     return redirect(url_for('admin.apps'))
+
+@admin_bp.route('/users')
+def users():
+    activations = get_activations()
+    return render_template('users.html', activations=activations)
+
+@admin_bp.route('/attempts')
+def attempts():
+    attempts_list = get_failed_attempts()
+    return render_template('attempts.html', attempts=attempts_list)
+
+@admin_bp.route('/settings')
+def settings():
+    return render_template('settings.html')
