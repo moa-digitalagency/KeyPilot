@@ -5,7 +5,7 @@ import os
 # Add root directory to sys.path
 sys.path.append(os.getcwd())
 
-from app import app
+from main import app
 
 class TestAppRoutes(unittest.TestCase):
     def setUp(self):
