@@ -39,7 +39,12 @@ Intègre les clés suivantes en dur (ou via configuration sécurisée) dans le c
 
 - **API URL** : `{api_url}`
 - **App ID** : `{app_id}`
-- **App Secret** : `{app_secret}`
+
+## 7. Mise en Cache Locale
+L'IA cible doit implémenter un système de cache pour éviter de surcharger l'API :
+- Créer un fichier cache chiffré localement ou utiliser une variable de session persistante.
+- La vérification via l'API ne doit se faire qu'une fois toutes les 24h (ou au démarrage de l'app si nécessaire).
+- L'état "valide" de la licence doit être mis en cache pour le reste des opérations durant cette période.
 
 ---
 **Instruction Finale :** Analyse la structure actuelle du projet `{app_name}` et propose une implémentation qui respecte ces contraintes de sécurité maximale.
